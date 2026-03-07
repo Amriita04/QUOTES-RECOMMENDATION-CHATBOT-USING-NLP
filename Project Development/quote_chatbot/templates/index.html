@@ -1,0 +1,619 @@
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quotes Recommendation Chatbot</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-wrapper {
+            width: 520px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            transition: background 0.3s ease;
+        }
+
+        .chat-wrapper.dark-mode {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-content {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .dark-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .dark-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .categories {
+            padding: 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chat-wrapper.dark-mode .categories {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .category-btn {
+            padding: 8px 14px;
+            border: 2px solid #1e40af;
+            background: white;
+            color: #1e40af;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .chat-wrapper.dark-mode .category-btn {
+            background: #1e293b;
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+
+        .category-btn:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .chat-wrapper.dark-mode .category-btn:hover {
+            background: #1e40af;
+            color: white;
+        }
+
+        .category-btn.active {
+            background: #1e40af;
+            color: white;
+        }
+
+        .messages {
+            height: 340px;
+            overflow-y: auto;
+            padding: 24px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-wrapper.dark-mode .messages {
+            background: #0f172a;
+        }
+
+        .message-wrapper {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .avatar.bot {
+            background: #dbeafe;
+        }
+
+        .chat-wrapper.dark-mode .avatar.bot {
+            background: #1e3a8a;
+        }
+
+        .avatar.user {
+            background: #1e40af;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .user .message {
+            background: #1e40af;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot .message {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-wrapper.dark-mode .bot .message {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+
+        .quote-card {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-wrapper.dark-mode .quote-card {
+            background: #064e3b;
+            color: #e2e8f0;
+        }
+
+        .quote-text {
+            font-style: italic;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            font-weight: 600;
+            color: #16a34a;
+            font-size: 13px;
+        }
+
+        .chat-wrapper.dark-mode .quote-author {
+            color: #86efac;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 12px 16px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-area {
+            display: flex;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .chat-wrapper.dark-mode .input-area {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            font-size: 15px;
+            outline: none;
+            background: white;
+            border-radius: 8px;
+            color: #1e293b;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .chat-wrapper.dark-mode input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        input:focus {
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .chat-wrapper.dark-mode input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        button {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-radius: 8px;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15);
+        }
+
+        button:hover {
+            background: #1e3a8a;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(30, 64, 175, 0.15);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .chat-wrapper.dark-mode .messages::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        function ChatBot() {
+            const [messages, setMessages] = useState([
+                {
+                    id: 0,
+                    type: 'bot',
+                    text: 'Welcome! 👋 I can recommend quotes for you. Choose a category or ask me anything!',
+                    author: null
+                }
+            ]);
+            const [input, setInput] = useState('');
+            const [darkMode, setDarkMode] = useState(false);
+            const [typing, setTyping] = useState(false);
+            const [selectedCategory, setSelectedCategory] = useState(null);
+            const messagesEndRef = useRef(null);
+
+            const categories = [
+                { icon: '💪', name: 'Motivation' },
+                { icon: '❤️', name: 'Love' },
+                { icon: '🏆', name: 'Success' },
+                { icon: '😂', name: 'Funny' }
+            ];
+
+            const scrollToBottom = () => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            useEffect(() => {
+                scrollToBottom();
+            }, [messages, typing]);
+
+            useEffect(() => {
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }, [darkMode]);
+
+            const parseBotResponse = (response) => {
+                try {
+                    const data = JSON.parse(response);
+                    if (data.quote && data.author) {
+                        return {
+                            type: 'quote',
+                            quote: data.quote,
+                            author: data.author
+                        };
+                    }
+                    return { type: 'text', message: response };
+                } catch (e) {
+                    return { type: 'text', message: response };
+                }
+            };
+
+            const sendMessage = async (messageText = null, category = null) => {
+                const text = messageText || input.trim();
+                if (!text && !category) return;
+
+                let finalMessage = text;
+                if (category) {
+                    finalMessage = `Show me ${category.name} quotes`;
+                    setSelectedCategory(category.name);
+                }
+
+                setInput('');
+                setMessages(prev => [...prev, {
+                    id: Date.now(),
+                    type: 'user',
+                    text: finalMessage,
+                    author: null
+                }]);
+
+                setTyping(true);
+
+                try {
+                    const response = await fetch('/get', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: finalMessage })
+                    });
+
+                    const data = await response.json();
+                    const parsed = parseBotResponse(data);
+
+                    setTimeout(() => {
+                        setTyping(false);
+                        if (parsed.type === 'quote') {
+                            setMessages(prev => [...prev, {
+                                id: Date.now(),
+                                type: 'bot',
+                                text: parsed.quote,
+                                author: parsed.author
+                            }]);
+                        } else {
+                            setMessages(prev => [...prev, {
+                                id: Date.now(),
+                                type: 'bot',
+                                text: parsed.message,
+                                author: null
+                            }]);
+                        }
+                    }, 1500);
+                } catch (error) {
+                    setTyping(false);
+                    setMessages(prev => [...prev, {
+                        id: Date.now(),
+                        type: 'bot',
+                        text: 'Sorry, I encountered an error. Please try again.',
+                        author: null
+                    }]);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !typing) {
+                    sendMessage();
+                }
+            };
+
+            return (
+                <div className={`chat-wrapper ${darkMode ? 'dark-mode' : ''}`}>
+                    <div className="header">
+                        <div className="header-content">
+                            <div className="header-title">✨ Quotes Bot</div>
+                        </div>
+                        <button
+                            className="dark-toggle"
+                            onClick={() => setDarkMode(!darkMode)}
+                            title="Toggle dark mode"
+                        >
+                            {darkMode ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+
+                    <div className="categories">
+                        {categories.map(category => (
+                            <button
+                                key={category.name}
+                                className={`category-btn ${selectedCategory === category.name ? 'active' : ''}`}
+                                onClick={() => sendMessage(null, category)}
+                                disabled={typing}
+                            >
+                                {category.icon} {category.name}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="messages">
+                        {messages.map(msg => (
+                            <div key={msg.id} className={`message-wrapper ${msg.type}`}>
+                                {msg.type === 'bot' && (
+                                    <div className="avatar bot">🤖</div>
+                                )}
+                                <div className="message-content">
+                                    {msg.author ? (
+                                        <div className="quote-card">
+                                            <div className="quote-text">"{msg.text}"</div>
+                                            <div className="quote-author">— {msg.author}</div>
+                                        </div>
+                                    ) : (
+                                        <div className="message">{msg.text}</div>
+                                    )}
+                                </div>
+                                {msg.type === 'user' && (
+                                    <div className="avatar user">👤</div>
+                                )}
+                            </div>
+                        ))}
+                        {typing && (
+                            <div className="message-wrapper bot">
+                                <div className="avatar bot">🤖</div>
+                                <div className="typing-indicator">
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    <div className="input-area">
+                        <input
+                            id="message"
+                            type="text"
+                            placeholder="Ask something or pick a category..."
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            disabled={typing}
+                        />
+                        <button
+                            onClick={() => sendMessage()}
+                            disabled={typing || !input.trim()}
+                        >
+                            Send
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<ChatBot />);
+    </script>
+
+</body>
+
+</html>
+```
