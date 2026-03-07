@@ -1,0 +1,52 @@
+version: "3.1"
+
+nlu:
+
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey
+    - good morning
+    - good evening
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you later
+
+- intent: ask_motivational_quote
+  examples: |
+    - give me a motivational quote
+    - motivate me
+    - i need motivation
+    - tell me a motivational quote
+
+- intent: ask_love_quote
+  examples: |
+    - give me a love quote
+    - tell me something about love
+    - love quote please
+
+- intent: ask_funny_quote
+  examples: |
+    - tell me a funny quote
+    - make me laugh
+    - give funny quote
+
+- intent: ask_success_quote
+  examples: |
+    - give success quote
+    - quote about success
+    - tell me success quote
+
+- intent: ask_inspirational_quote
+  examples: |
+    - give inspirational quote
+    - inspire me
+    - inspirational quote please
+    - give me a motivational quote
+    - tell me a life quote
+    - I want a love quote
+    - show me inspirational quotes
